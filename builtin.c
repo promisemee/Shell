@@ -1,0 +1,17 @@
+void shell_cd();
+void shell_ls();
+void shell_cat();
+void shell_chmod();
+void shell_mkdir();
+void shell_rmdir();
+void shell_rm();
+void shell_exit();
+void shell_fg();
+void shell_bg();
+void shell_kill();
+void shell_pwd();
+void shell_ps();
+void shell_job();
+void shell_history();
+void shell_clear();
+void shell_help();
