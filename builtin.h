@@ -1,5 +1,5 @@
 void shell_cd(int argc, char* argv[]);
-// void shell_ls(int argc, char* argv[]);
+void shell_ls(int argc, char* argv[]);
 // void shell_cat(int argc, char* argv[]);
 // void shell_chmod(int argc, char* argv[]);
 // void shell_mkdir(int argc, char* argv[]);
@@ -24,3 +24,6 @@ struct command {
 };
 
 extern struct command built[100];
+
+
+static void do_ls(char* path);
