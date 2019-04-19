@@ -1,3 +1,5 @@
+all : shell
+
 shell : shell.o builtin.o
 	gcc -o shell shell.o builtin.o
 
@@ -8,5 +10,5 @@ builtin.o : builtin.h builtin.c
 	gcc -c -o builtin.o builtin.c
 
 clean:
-	rm -f *.o
-	rm -f shell
+	rm -f *.o shell
+	rm -f test.* test

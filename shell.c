@@ -23,6 +23,7 @@ void handler(int signum){
   ;
 }
 
+
 void error(char * msg){
   //function for error and exit
   perror(msg);
@@ -43,20 +44,22 @@ void shell_loop(){
     printf(ANSI_COLOR_RED "myshell> "  ANSI_COLOR_RESET);             //shell prompt
     read_line(line);   //read line
     flag = check_line(line);
-    if (flag<0){
+    if (flag < 0){
       error("Input Error : ");
     }
     if (flag == 0){               //default
       parse_line(line, tokens);
       execute(tokens);
     }
+    else if (flag == 3){   //for pipe line
+      parse_rp(flag, line, tokens, leftt, rightt);
+      execute_pipe(leftt, rightt);
+    }
     else{
       parse_rp(flag, line, tokens, leftt, rightt);
-      execute_rp(flag, leftt, rightt);
+      // execute_rp(flag, leftt, rightt);
     }
-
-    // tokens = parse_line(line);       //parse line
-    // execute_line(tokens);            //execute line
+    //reset
     memset(line, 0, LINESIZE);
     memset(tokens, 0, BUFSIZE);
     memset(leftt, 0, BUFSIZE);
@@ -66,7 +69,8 @@ void shell_loop(){
 }
 
 int read_line(char * line){
-  char *buffer = malloc(sizeof(char) * LINESIZE);
+  //read line
+  char buffer[LINESIZE];
   char c;
 
   for(int i = 0;;i++){
@@ -78,8 +82,6 @@ int read_line(char * line){
     }
     buffer[i] = c;
   }
-
-  free(buffer);
   return 0;
 }
 
@@ -108,8 +110,7 @@ void parse_line(char * line, char ** tokens){
   //cut line to tokens
   int i = 0;
   char * token;
-  for(int k =0; line[k]!='\0';k++){         //ignore '\n', '\t'
-    if (line[k]=='\n') line[k] = '\0';
+  for(int k =0; line[k]!='\0';k++){         //ignore '\t'
     if (line[k]=='\t') line[k] = ' ';
   }
   token = strtok(line, " ");
@@ -123,7 +124,7 @@ void parse_line(char * line, char ** tokens){
 void parse_rp(int flag, char * line, char ** tokens, char ** left, char ** right){
   char *symbol[] = {" ",">", "<", "|"};
   char *sym = symbol[flag];
-  char * token = malloc(BUFSIZE * sizeof(char));
+  char token[LINESIZE];
   for(int k = 0; line[k]!='\0'; k++){
     if (line[k]=='\t') line[k] = ' ';
   }
@@ -131,7 +132,6 @@ void parse_rp(int flag, char * line, char ** tokens, char ** left, char ** right
   tokens[1] = strtok(NULL, sym);
   parse_line(tokens[0], left);
   parse_line(tokens[1], right);
-  free(tokens);
 }
 
 
@@ -139,11 +139,11 @@ void execute(char **tokens){
   pid_t pid;
   int status;
   if (tokens[0] == '\0') return;        //blank line
-  if (check_builtin(tokens[0]) == 1){
+  if (check_builtin(tokens[0]) == 1){   //is builtin function
     command_line(tokens);
     return;
   }
-
+  //Not builtin function
   pid = fork();   //fork child process, pid = pid of child process
   if (pid==-1) error("can't fork:");
   if (pid==0){                      //child process
@@ -158,11 +158,50 @@ void execute(char **tokens){
 
 }
 
-void execute_rp(int flag, char**left, char** right){
-  for(int i = 0; left[i]!=NULL; i++)  printf("%s", left[i]);
-  printf("\n");
-  for(int i = 0; right[i]!=NULL; i++)  printf("%s", right[i]);
-  printf("\n");
+void execute_pipe(char**left, char** right){
+  //for pipe
+  pid_t pid1, pid2;
+  int n, status, fd[2];
+  char buff[BUFSIZE];
+  if (pipe(fd)<0){
+    error("pipe error : ");
+  }
+  pid1 = fork();
+  if(pid1 == -1){
+    error("can't fork:");
+  }
+  if (pid1 == 0){
+    dup2(fd[1], STDOUT_FILENO);
+    close(fd[0]);
+    close(fd[1]);
+    if (execvp(left[0], left) == -1){
+      printf("No such command : %s\n", left[0]);
+    }
+    exit(0);
+  }
+  else{
+    //parent process
+    pid2 = fork();
+    if (pid2 == -1){
+      error("can't fork:");
+    }
+    if (pid2 == 0){
+      dup2(fd[0], STDIN_FILENO);
+      close(fd[1]);
+      close(fd[0]);
+
+      if (execvp(right[0], right) == -1){
+        printf("No such command : %s\n", right[0]);
+      }
+      exit(0);
+    }
+    else{
+      close(fd[0]);
+      close(fd[1]);
+      waitpid(pid1, &status, 0);
+      waitpid(pid2, &status, 0);
+    }
+  }
 }
 
 int token_count(char ** tokens){
