@@ -13,6 +13,9 @@
 
 #define LINESIZE 2048
 #define BUFSIZE 1024
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_RESET "\x1b[0m"    //for Reset!
 
 void handler(int signum){
   //handler for SIGNAL
@@ -33,12 +36,12 @@ void shell_loop(){
   char ** rightt = malloc(BUFSIZE * sizeof(char*));   //for redirecting and pipe
   int flag = -1;
 
-  // signal(SIGINT, handler);
+  signal(SIGINT, handler);
   signal(SIGTSTP, handler);
 
   while(1){
-    printf("myshell>");             //shell prompt
-    fgets(line, LINESIZE, stdin);   //read line
+    printf(ANSI_COLOR_RED "myshell> "  ANSI_COLOR_RESET);             //shell prompt
+    read_line(line);   //read line
     flag = check_line(line);
     if (flag<0){
       error("Input Error : ");
@@ -54,14 +57,32 @@ void shell_loop(){
 
     // tokens = parse_line(line);       //parse line
     // execute_line(tokens);            //execute line
-    memset(line, 0, sizeof(line));
-    memset(tokens, 0, sizeof(tokens));
-    memset(leftt, 0, sizeof(leftt));
-    memset(rightt, 0, sizeof(rightt));
+    memset(line, 0, LINESIZE);
+    memset(tokens, 0, BUFSIZE);
+    memset(leftt, 0, BUFSIZE);
+    memset(rightt, 0, BUFSIZE);
     flag = -1;
   }
-
 }
+
+int read_line(char * line){
+  char *buffer = malloc(sizeof(char) * LINESIZE);
+  char c;
+
+  for(int i = 0;;i++){
+    c = getchar();
+    if (c == '\n' || c == EOF){
+      buffer[i] = '\0';
+      strcpy(line, buffer);
+      break;
+    }
+    buffer[i] = c;
+  }
+
+  free(buffer);
+  return 0;
+}
+
 
 int check_line(char * line){
   //check line for '>', '<', '|', '&' and returns flag
@@ -115,16 +136,25 @@ void parse_rp(int flag, char * line, char ** tokens, char ** left, char ** right
 
 
 void execute(char **tokens){
-    pid_t pid;
-    int status;
-    pid = fork();   //fork child process, pid = pid of child process
-    if (pid==-1) error("can't fork:");
-    if (pid==0){                      //child process
-      command_line(tokens);
+  pid_t pid;
+  int status;
+  if (tokens[0] == '\0') return;        //blank line
+  if (check_builtin(tokens[0]) == 1){
+    command_line(tokens);
+    return;
+  }
+
+  pid = fork();   //fork child process, pid = pid of child process
+  if (pid==-1) error("can't fork:");
+  if (pid==0){                      //child process
+    if (execvp(tokens[0], tokens) == -1){
+      printf("No such command : %s\n", tokens[0]);
     }
-    else{         //parent process
-      waitpid(pid, &status, 0);
-    }
+    exit(0);
+  }
+  else{         //parent process
+    waitpid(pid, &status, 0);
+  }
 
 }
 
@@ -143,6 +173,17 @@ int token_count(char ** tokens){
   return i;
 }
 
+int check_builtin(char * command){
+  int k = size_built;               //number of shell commands
+
+  for(int i = 0; i < k;i++){      //find matching builtin command
+    if (strcmp(command, built[i].command) == 0){
+      return 1;
+    }
+  }
+  return 0;
+}
+
 void command_line(char ** tokens){
   int tkn = token_count(tokens);    //token numbers
   if (tkn == 0) return;             //for empty line
@@ -155,23 +196,6 @@ void command_line(char ** tokens){
   }
 
 }
-//
-// void execute_line(char ** tokens){
-//
-//   //fork()
-//   pid_t pid;
-//   int status;
-//   pid = fork();   //fork child process, pid = pid of child process
-//   if (pid==-1) error("can't fork:");
-//   if (pid==0){                      //child process
-//
-//
-//   }
-//
-//   else{         //parent process
-//     waitpid(pid, &status, 0);
-//   }
-// }
 
 
 //***MAIN***//

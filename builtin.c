@@ -3,6 +3,7 @@
 #include <dirent.h>
 #include <sys/types.h>
 #include <string.h>
+#include <unistd.h>
 #include "builtin.h"
 
 int size_built = 2;
@@ -11,46 +12,15 @@ int size_built = 2;
 struct command built[] =
 {
   {"exit", shell_exit},
+  {"hi", shell_hi}
   // {"cd", shell_cd},
-  {"ls", shell_ls},
+  //{"ls", shell_ls},
   // {"cat", shell_cat},
   // {"chmod", shell_chmod},
   // {"mkdir", shell_mkdir},
   // {"rmdir", shell_rmdir},
   // {"rm", shell_rm}
 };
-
-
-void shell_ls(int argc, char* argv[]){
-  int i;
-  if (argc<2){            //only 'ls'
-    do_ls(".");           //current directory
-    return;
-  }
-  if (strcmp(argv[1], "-l") == 0) return;
-  for(i = 1; i < argc; i++){
-    printf("%s:\n", argv[i]);
-    do_ls(argv[i]);
-    printf("\n");
-  }
-  return;
-}
-
-static void do_ls(char* path){
-	DIR *d;
-	struct dirent *ent;
-
-	d = opendir(path);
-	if(!d){
-		perror(path);
-		exit(1);
-	}
-	while(ent = readdir(d)){
-		printf("%s\n", ent->d_name);
-	}
-	closedir(d);
-}
-
 
 // void shell_cd(int argc, char* argv[]){}
 // void shell_cat(int argc, char* argv[]){}
@@ -70,6 +40,10 @@ static void do_ls(char* path){
 // void shell_help(int argc, char* argv[]){}
 
 void shell_exit(int argc, char* argv[]){
-  
   exit(0);
+  return;
+}
+
+void shell_hi(int argc, char* argv[]){
+  printf("Hi!\n");
 }

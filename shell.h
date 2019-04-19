@@ -22,3 +22,6 @@ void parse_rp(int flag, char* line, char ** tokens, char ** left, char ** right)
 
 void execute(char ** tokens);
 void execute_rp(int flag, char**left, char** right);
+int is_builtin(char * token);
+int check_builtin(char * command);
+int read_line(char * line);
