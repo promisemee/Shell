@@ -12,12 +12,13 @@ void shell_cd(int argc, char* argv[]);
 // void shell_job(int argc, char* argv[]);
 // void shell_history(int argc, char* argv[]);
 // void shell_clear(int argc, char* argv[]);
-// void shell_help(int argc, char* argv[]);
+void shell_help(int argc, char* argv[]);
 
 int size_built;
 
 struct command {
   char *command;
+  char *builtin;
   void (*shell_command)(int argc, char* argv[]);
 };
 

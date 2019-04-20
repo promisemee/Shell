@@ -8,20 +8,15 @@
 
 #define BUFSIZE 2048
 
-int size_built = 3;
-//int size_built = sizeof(built)/sizeof(struct command);
+int size_built = 4;
+// int size_built = sizeof(built)/sizeof(struct command);
 
 struct command built[] =
 {
-  {"exit", shell_exit},
-  {"hi", shell_hi},
-  {"cd", shell_cd}
-  //{"ls", shell_ls},
-  // {"cat", shell_cat},
-  // {"chmod", shell_chmod},
-  // {"mkdir", shell_mkdir},
-  // {"rmdir", shell_rmdir},
-  // {"rm", shell_rm}
+  {"hi", "hi : Print \"Hi\"", shell_hi},
+  {"cd", "cd [DIR] : Change the directory to DIR", shell_cd},
+  {"help", "help : Print list of builtin functions ", shell_help},
+  {"exit", "exit : Exit the shell", shell_exit}
 };
 
 void shell_exit(int argc, char* argv[]){
@@ -40,12 +35,21 @@ void shell_cd(int argc, char * argv[]){
     return;
   }
   char path[BUFSIZE];
-  if(getcwd(path, sizeof(path))==NULL){
-    printf("No such Directory\n");
-    exit(0);
+  if (chdir(argv[1])==-1){
+    printf("No such directory : %s\n", argv[1]);
+    return;
   }
-  chdir(argv[1]);
+  printf("%s\n", getcwd(path, sizeof(path)));
+  return;
+}
 
-  printf("%s\n", path);
+void shell_help(int argc, char * argv[]){
+  int k = size_built;
+  printf("\nList of Shell Builtin Functions\n\n");
+  int i = 0;
+  for(int i=0;i<k;i++){
+    printf(" %s\n", built[i].builtin);
+  }
+  printf("\n");
   return;
 }

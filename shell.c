@@ -49,11 +49,11 @@ void shell_loop(){
     }
     if (flag == 0){               //default
       parse_line(line, tokens);
-      execute(tokens);
+      run_default(tokens);
     }
     else if (flag == 3){   //for pipe line
       parse_rp(flag, line, tokens, leftt, rightt);
-      execute_pipe(leftt, rightt);
+      run_pipe(leftt, rightt);
     }
     else{
       parse_rp(flag, line, tokens, leftt, rightt);
@@ -135,12 +135,12 @@ void parse_rp(int flag, char * line, char ** tokens, char ** left, char ** right
 }
 
 
-void execute(char **tokens){
+void run_default(char **tokens){
   pid_t pid;
   int status;
   if (tokens[0] == '\0') return;        //blank line
   if (check_builtin(tokens[0]) == 1){   //is builtin function
-    command_line(tokens);
+    command_builtin(tokens);
     return;
   }
   //Not builtin function
@@ -158,8 +158,8 @@ void execute(char **tokens){
 
 }
 
-void execute_pipe(char**left, char** right){
-  //for pipe
+void run_pipe(char**left, char** right){
+  //for pipe execution
   pid_t pid1, pid2;
   int n, status, fd[2];
   char buff[BUFSIZE];
@@ -174,9 +174,7 @@ void execute_pipe(char**left, char** right){
     dup2(fd[1], STDOUT_FILENO);
     close(fd[0]);
     close(fd[1]);
-    if (execvp(left[0], left) == -1){
-      printf("No such command : %s\n", left[0]);
-    }
+    execute_pipe(left);
     exit(0);
   }
   else{
@@ -189,10 +187,7 @@ void execute_pipe(char**left, char** right){
       dup2(fd[0], STDIN_FILENO);
       close(fd[1]);
       close(fd[0]);
-
-      if (execvp(right[0], right) == -1){
-        printf("No such command : %s\n", right[0]);
-      }
+      execute_pipe(right);
       exit(0);
     }
     else{
@@ -202,6 +197,18 @@ void execute_pipe(char**left, char** right){
       waitpid(pid2, &status, 0);
     }
   }
+}
+
+void execute_pipe(char**token){
+  if (check_builtin(token[0])==1){      //builtin
+    command_builtin(token);
+  }
+  else{                                 //not builtin
+      if (execvp(token[0], token)==-1){
+        printf("No such command : %s\n", token[0]);
+      }
+  }
+  return;
 }
 
 int token_count(char ** tokens){
@@ -223,7 +230,7 @@ int check_builtin(char * command){
   return 0;
 }
 
-void command_line(char ** tokens){
+void command_builtin(char ** tokens){
   int tkn = token_count(tokens);    //token numbers
   if (tkn == 0) return;             //for empty line
   int k = size_built;               //number of shell commands
