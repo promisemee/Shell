@@ -1,12 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include <dirent.h>
-#include <sys/types.h>
-#include <string.h>
-#include <unistd.h>
-#include "builtin.h"
 
-#define BUFSIZE 2048
+#include "shell.h"
+#include "builtin.h"
 
 int size_built = 4;
 // int size_built = sizeof(built)/sizeof(struct command);
