@@ -16,7 +16,7 @@ void shell_loop();
 int read_line(char * line);
 int check_line(char * line);
 void parse_line(char * line, char ** tokens);
-void parse_rp(int flag, char* line, char ** tokens, char ** left, char ** right);
+int parse_rp(int flag, char* line, char ** tokens);
 
 //execute line -> execute.c
 // int token_count(char ** tokens);

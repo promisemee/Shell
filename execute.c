@@ -25,47 +25,97 @@ void run_default(char **tokens){
 
 }
 
-void run_pipe(char**left, char** right){
-  //for pipe execution
-  pid_t pid1, pid2;
-  int n, status, fd[2];
-  char buff[BUFSIZE];
-  if (pipe(fd)<0){
-    error("pipe error : ");
-  }
-  pid1 = fork();
-  if(pid1 == -1){
-    error("can't fork:");
-  }
-  if (pid1 == 0){
-    dup2(fd[1], STDOUT_FILENO);
-    close(fd[0]);
-    close(fd[1]);
-    execute_pipe(left);
+
+
+void run_pipe(int pn, char ** tokens){
+  int fd[2];
+  pid_t pid, mpid;
+  int fdn, i;
+  i = 0;
+  int status;
+  char ** command = malloc(BUFSIZE * sizeof(char*));
+  char ** temp = malloc(BUFSIZE * sizeof(char*));
+
+  parse_line(tokens[i], command);
+  mpid = fork();
+
+  if (mpid<0) error("can't fork:");
+
+  if (mpid == 0){
+    while(command != NULL){
+      pipe(fd);
+      pid = fork();
+      if (pid<0){
+        error("can't fork : ");
+      }
+      if (pid == 0){
+        dup2(fdn, 0);
+        if (tokens[i+1]!='\0'){
+          dup2(fd[1], 1);
+        }
+        close(fd[0]);
+        execute_pipe(command);
+        exit(0);
+      }
+      else{
+        wait(NULL);
+        close(fd[1]);
+        fdn = fd[0];
+        i++;
+        if (tokens[i] == '\0')  command = NULL;
+        else  parse_line(tokens[i], command);
+      }
+    }
     exit(0);
   }
   else{
-    //parent process
-    pid2 = fork();
-    if (pid2 == -1){
-      error("can't fork:");
-    }
-    if (pid2 == 0){
-      dup2(fd[0], STDIN_FILENO);
-      close(fd[1]);
-      close(fd[0]);
-      execute_pipe(right);
-      exit(0);
-    }
-    else{
-      close(fd[0]);
-      close(fd[1]);
-      waitpid(pid1, &status, 0);
-      waitpid(pid2, &status, 0);
-    }
+    waitpid(mpid, &status, 0);
+
   }
+
 }
 
+// void run_pipe(char**left, char** right){
+//   //for pipe execution
+//   pid_t pid1, pid2;
+//   int n, status, fd[2];
+//   char buff[BUFSIZE];
+//   if (pipe(fd)<0){
+//     error("pipe error : ");
+//   }
+//   pid1 = fork();
+//   if(pid1 == -1){
+//     error("can't fork:");
+//   }
+//   if (pid1 == 0){
+//     dup2(fd[1], STDOUT_FILENO);
+//     close(fd[0]);
+//     close(fd[1]);
+//     execute_pipe(left);
+//     exit(0);
+//   }
+//   else{
+//     //parent process
+//     pid2 = fork();
+//     if (pid2 == -1){
+//       error("can't fork:");
+//     }
+//     if (pid2 == 0){
+//       dup2(fd[0], STDIN_FILENO);
+//       close(fd[1]);
+//       close(fd[0]);
+//       execute_pipe(right);
+//       exit(0);
+//     }
+//     else{
+//       close(fd[0]);
+//       close(fd[1]);
+//       waitpid(pid1, &status, 0);
+//       waitpid(pid2, &status, 0);
+//     }
+//   }
+// }
+//
 void execute_pipe(char**token){
   if (check_builtin(token[0])==1){      //builtin
     command_builtin(token);

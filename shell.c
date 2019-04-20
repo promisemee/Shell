@@ -46,11 +46,11 @@ void shell_loop(){
       run_default(tokens);
     }
     else if (flag == 3){   //for pipe line
-      parse_rp(flag, line, tokens, leftt, rightt);
-      run_pipe(leftt, rightt);
+      int pipenum = parse_rp(flag, line, tokens);
+      run_pipe(pipenum, tokens);
     }
     else{
-      parse_rp(flag, line, tokens, leftt, rightt);
+      parse_rp(flag, line, tokens);
       // execute_rp(flag, leftt, rightt);
     }
     //reset
@@ -115,17 +115,21 @@ void parse_line(char * line, char ** tokens){
   }
 }
 
-void parse_rp(int flag, char * line, char ** tokens, char ** left, char ** right){
+int parse_rp(int flag, char * line, char ** tokens){
   char *symbol[] = {" ",">", "<", "|"};
   char *sym = symbol[flag];
-  char token[LINESIZE];
+  char * token;
   for(int k = 0; line[k]!='\0'; k++){
     if (line[k]=='\t') line[k] = ' ';
   }
-  tokens[0] = strtok(line, sym);
-  tokens[1] = strtok(NULL, sym);
-  parse_line(tokens[0], left);
-  parse_line(tokens[1], right);
+  int i = 0;
+  token = strtok(line, sym);
+  while(token!=NULL){
+    tokens[i] = token;
+    i++;
+    token = strtok(NULL, sym);
+  }
+  return i;
 }
 
 
