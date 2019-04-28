@@ -78,8 +78,7 @@ void run_pipe(int pn, char ** tokens){
 
 void run_redirection(int flag, char ** token){
   //cannot handle multiple redirection!
-  int fd[2];
-  int file, status;
+  int fd, status;
   pid_t pid;
   
   char ** left = malloc(BUFSIZE*sizeof(char*));
@@ -91,14 +90,11 @@ void run_redirection(int flag, char ** token){
     pid = fork();
     if (pid<0) error("can't fork");
     if (pid==0){
-      if (file = open(right[0], O_CREAT | O_TRUNC | O_WRONLY, 0644)==-1){
-        error("File Error");
-      }
-      if (dup2(file, STDOUT_FILENO)==-1){
-        error("dup error");
-      }
+      fd = open(right[0], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+      if (fd<0) error("File Error");
+      dup2(fd, STDOUT_FILENO);
       execute_child(left);
-      close(file);
+      close(fd);
       exit(0);
     }
     else{
@@ -109,15 +105,13 @@ void run_redirection(int flag, char ** token){
     pid = fork();
     if (pid<0) error("can't fork");
     if (pid==0){
-      if (file = open(left[0], O_RDONLY)==-1){
-        error("File Error");
+      fd = open(right[0], O_RDONLY);
+      if (fd<0) error("File Error");
+      if (dup2(fd, STDIN_FILENO)==-1){
+        perror("dup error");
       }
-      if (dup2(file, 0)==-1){
-        error("dup error");
-      }
-      execute_child(right);
-      close(file);
-
+      execute_child(left);
+      close(fd);
       exit(0);
     }
     else waitpid(pid, &status, 0);
