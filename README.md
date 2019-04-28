@@ -24,7 +24,7 @@ $ make
 $ ./shell
 ```
 ## Wiki
-- [Shell Wiki!](https://github.com/promisemee/Shell/wiki.git)
+- [Shell Wiki!](https://github.com/promisemee/Shell/wiki)
 
 ## License
 
