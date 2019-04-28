@@ -9,6 +9,17 @@
 #define LINESIZE 2048
 #define BUFSIZE 1024
 
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_YELLOW   "\x01b[33m"
+#define ANSI_COLOR_RESET "\x1b[0m"    //for Reset!
+
+//----
+char history[BUFSIZE][LINESIZE];		
+int i;
+//for history function---
+
+
 //main
 void shell_loop();
 

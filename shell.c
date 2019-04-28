@@ -5,12 +5,6 @@
 #include "builtin.h"
 #include "execute.h"
 
-#define LINESIZE 2048
-#define BUFSIZE 1024
-#define ANSI_COLOR_BLUE    "\x1b[34m"
-#define ANSI_COLOR_RED     "\x1b[31m"
-#define ANSI_COLOR_RESET "\x1b[0m"    //for Reset!
-
 void handler(int signum){
   //handler for SIGNAL
   //does nothing yet!
@@ -28,21 +22,36 @@ void shell_loop(){
 
   system("clear");    //clear terminal
 
-  // printf("");
+  printf("---------------------------------------------------------------------------\n");
+  printf("\n\n");
+  printf("  Welcome to Shell! ٩( ᐛ )و\n");
+  printf("  Type 'help' for help or for information of this shell\n");
+  printf("  Type 'q' or 'exit' to exit the shell\n\n\n");
+  printf("---------------------------------------------------------------------------\n");
+  printf("\n\n");
 
+  // printf("");
+  memset(history, 0, LINESIZE);
+  i = 0;
   char line[LINESIZE];
   char ** tokens = malloc(BUFSIZE * sizeof(char*));   //for parsed line
   int flag = -1;
+  
 
-  // signal(SIGINT, handler);
+  signal(SIGINT, handler);
   signal(SIGTSTP, handler);
 
   while(1){
     printf(ANSI_COLOR_RED "myshell> "  ANSI_COLOR_RESET);             //shell prompt
     read_line(line);   //read line
+    
+    strcpy(history[i], line);   //history
+    i++;
+    
+    if (strcmp(line, "q")==0) exit(0);      //quick exit
     flag = check_line(line);
     if (flag < -1){
-      error("Input Error : ");
+      error("Input Error : "); 
     }
     else if(flag == -1){
       printf("Syntax Error\n");

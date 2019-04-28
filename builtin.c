@@ -3,14 +3,16 @@
 #include "shell.h"
 #include "builtin.h"
 
-int size_built = 4;
+int size_built = 6;
 // int size_built = sizeof(built)/sizeof(struct command);
 
 struct command built[] =
 {
-  {"hi", "hi : Print \"Hi\"", shell_hi},
-  {"cd", "cd [DIR] : Change the directory to DIR", shell_cd},
-  {"help", "help : Print list of builtin functions ", shell_help},
+  {"hi", "hi : Print \"Hi!\"", shell_hi},
+  {"cd", "cd [DIR] : Change the directory to [DIR]", shell_cd},
+  {"help", "help : Display information about this shell ", shell_help},
+  {"builtin", "builtin : Display list of builtin functions", shell_builtin},
+  {"history", "history [-c] : Display history list", shell_history},
   {"exit", "exit : Exit the shell", shell_exit}
 };
 
@@ -20,7 +22,7 @@ void shell_exit(int argc, char* argv[]){
 }
 
 void shell_hi(int argc, char* argv[]){
-  printf("Hi!\n");
+  printf("Hi! _(≥∇ ≤)ノミ☆ \n");
   return;
 }
 
@@ -38,9 +40,48 @@ void shell_cd(int argc, char * argv[]){
   return;
 }
 
-void shell_help(int argc, char * argv[]){
+void shell_history(int argc, char * argv[]){
+  int k = 0;
+  int j = 1;
+  if (argc>1){    //has argument
+    if (strcmp(argv[1], "-c")==0){   //clear history
+      i = 0;
+      memset(history, 0, sizeof(history[0][0] * LINESIZE * BUFSIZE));
+    }
+    return;
+  }
+
+  while(k<=i){
+    if (strcmp(history[k], "\0")==0) k++;   //pass empty line
+    else{
+      printf("  %d    %s\n", j, history[k]);
+      j++;
+    }
+    k++;
+  }
+}
+
+void shell_help(int argc, char *argv[]){
+  // printf(ANSI_COLOR_YELLOW);
+  printf("\n**If you're finding a list of builtin functions, type 'builtin'**\n\n");
+  printf("Shell built by Kim Dain, 2019\n\n");
+  printf("This shell can do :\n");
+  printf("\t* execute commands with execvp()\n");
+  printf("\t* execute commands with builtin functions\n");
+  printf("\t* Multiple pipelines ('|')\n");
+  printf("\t* Redirection ('<', '>')\n");
+  printf("\n");
+  printf("Checkout my git repo -> https://github.com/promisemee/Shell\n\n");
+  // printf(ANSI_COLOR_RESET);
+
+  printf("\n");
+
+
+}
+
+void shell_builtin(int argc, char * argv[]){
   int k = size_built;
-  printf("\nList of Shell Builtin Functions\n\n");
+  printf("\n* List of Shell Builtin Functions\n\n");
   int i = 0;
   for(int i=0;i<k;i++){
     printf(" %s\n", built[i].builtin);
