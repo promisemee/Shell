@@ -3,7 +3,7 @@
 
 ## Features
 - Delimiters: pipe(|), redirection(>, <)
-- Built-in commands : exit, cd, hi
+- Built-in commands : exit, cd, hi, help
 
 ## Installation
 1. Clone the repo
