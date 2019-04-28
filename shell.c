@@ -34,17 +34,20 @@ void shell_loop(){
   char ** tokens = malloc(BUFSIZE * sizeof(char*));   //for parsed line
   int flag = -1;
 
-  signal(SIGINT, handler);
+  // signal(SIGINT, handler);
   signal(SIGTSTP, handler);
 
   while(1){
     printf(ANSI_COLOR_RED "myshell> "  ANSI_COLOR_RESET);             //shell prompt
     read_line(line);   //read line
     flag = check_line(line);
-    if (flag < 0){
+    if (flag < -1){
       error("Input Error : ");
     }
-    if (flag == 0){               //default
+    else if(flag == -1){
+      printf("Syntax Error\n");
+    }
+    else if (flag == 0){               //default
       parse_line(line, tokens);
       run_default(tokens);
     }
@@ -60,7 +63,7 @@ void shell_loop(){
     //reset
     memset(line, 0, LINESIZE);
     memset(tokens, 0, BUFSIZE);
-    flag = -1;
+    flag = -2;
   }
 }
 
@@ -84,6 +87,9 @@ int read_line(char * line){
 
 int check_line(char * line){
   //check line for '>', '<', '|', '&' and returns flag
+  if (strcmp(line, "<") == 0 || strcmp(line, ">") == 0 || strcmp(line, "|") == 0){  //syntax error
+    return -1;
+  }
   for(int i = 0; line[i]!='\0' ; i++){
     switch(line[i]){
       case '>':
@@ -121,10 +127,6 @@ int parse_rp(int flag, char * line, char ** tokens){
   char *symbol[] = {" ",">", "<", "|"};
   char *sym = symbol[flag];
   char * token;
-  if (line[0] == '<' || '>' || '|') {
-    printf("syntax error : %s \n", sym);
-    return 0;
-  }
   for(int k = 0; line[k]!='\0'; k++){
     if (line[k]=='\t') line[k] = ' ';
   }
