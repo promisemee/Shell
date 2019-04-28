@@ -18,19 +18,6 @@ int check_line(char * line);
 void parse_line(char * line, char ** tokens);
 int parse_rp(int flag, char* line, char ** tokens);
 
-//execute line -> execute.c
-// int token_count(char ** tokens);
-//
-// void run_default(char ** tokens);
-// void run_pipe(char**left, char** right);
-//
-// void execute_line(char **tokens);
-// void execute_pipe(char ** token);
-//
-// int check_builtin(char * command);
-// void command_builtin(char **);
-
-
 //error & signal
 void error(char* msg);
 void handler(int);

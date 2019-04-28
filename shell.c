@@ -25,10 +25,13 @@ void error(char * msg){
 }
 
 void shell_loop(){
+
+  system("clear");    //clear terminal
+
+  // printf("");
+
   char line[LINESIZE];
-  char ** tokens = malloc(BUFSIZE * sizeof(char*));   //default input, &
-  char ** leftt = malloc(BUFSIZE * sizeof(char*));    //for redirecting and pipe
-  char ** rightt = malloc(BUFSIZE * sizeof(char*));   //for redirecting and pipe
+  char ** tokens = malloc(BUFSIZE * sizeof(char*));   //for parsed line
   int flag = -1;
 
   signal(SIGINT, handler);
@@ -47,17 +50,16 @@ void shell_loop(){
     }
     else if (flag == 3){   //for pipe line
       int pipenum = parse_rp(flag, line, tokens);
-      run_pipe(pipenum, tokens);
+      if (pipenum > 0) run_pipe(pipenum, tokens);
     }
     else{
-      parse_rp(flag, line, tokens);
-      // execute_rp(flag, leftt, rightt);
+      int redir = parse_rp(flag, line, tokens);
+      if (redir > 2) printf("Cannot handle multiple redirection\n");
+      if (redir > 0) run_redirection(flag, tokens);
     }
     //reset
     memset(line, 0, LINESIZE);
     memset(tokens, 0, BUFSIZE);
-    memset(leftt, 0, BUFSIZE);
-    memset(rightt, 0, BUFSIZE);
     flag = -1;
   }
 }
@@ -119,6 +121,10 @@ int parse_rp(int flag, char * line, char ** tokens){
   char *symbol[] = {" ",">", "<", "|"};
   char *sym = symbol[flag];
   char * token;
+  if (line[0] == '<' || '>' || '|') {
+    printf("syntax error : %s \n", sym);
+    return 0;
+  }
   for(int k = 0; line[k]!='\0'; k++){
     if (line[k]=='\t') line[k] = ' ';
   }
