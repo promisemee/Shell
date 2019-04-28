@@ -23,3 +23,9 @@ $ make
 ```
 $ ./shell
 ```
+## Wiki
+[Shell Wiki!](https://github.com/promisemee/Shell.wiki.git)
+
+## License
+
+[MIT License](https://github.com/promisemee/Shell/blob/master/LICENSE)
