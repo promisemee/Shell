@@ -22,17 +22,23 @@ void shell_exit(int argc, char* argv[]){
 }
 
 void shell_hi(int argc, char* argv[]){
-  printf("Hi! _(≥∇ ≤)ノミ☆ \n");
+  printf("\nHi! _(≥∇ ≤)ノミ☆ \n\n");
   return;
 }
 
 void shell_cd(int argc, char * argv[]){
+  char path[BUFSIZE];
   if (argc<2){
     printf("Wrong Usage : cd [dir]\n");
     return;
   }
-  char path[BUFSIZE];
-  if (chdir(argv[1])==-1){
+  if (strcmp(argv[1], "~")==0){   //move to /home/(username)
+    char *buf = getlogin();
+    char cd[BUFSIZE] = "/home/";
+    strcat(cd, buf);
+    chdir(cd);
+  }
+  else if (chdir(argv[1])==-1){
     printf("No such directory : %s\n", argv[1]);
     return;
   }
@@ -46,12 +52,14 @@ void shell_history(int argc, char * argv[]){
   if (argc>1){    //has argument
     if (strcmp(argv[1], "-c")==0){   //clear history
       i = 0;
-      memset(history, 0, sizeof(history[0][0] * LINESIZE * BUFSIZE));
+      for(int p = 0; p<=i;p++){
+        strcpy(history[p], "\0");
+      }
     }
     return;
   }
 
-  while(k<=i){
+  while(k<i){
     if (strcmp(history[k], "\0")==0) k++;   //pass empty line
     else{
       printf("  %d    %s\n", j, history[k]);

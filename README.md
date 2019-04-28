@@ -7,7 +7,8 @@
 
 ## Features
 - Delimiters: pipe(|), redirection(>, <)
-- Built-in commands : exit, cd, hi, help, builtin
+- Built-in commands : exit, cd, hi, help, builtin, history
+- commands with execvp()
 
 ## Installation
 1. Clone the repo
